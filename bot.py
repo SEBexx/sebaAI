@@ -15,14 +15,20 @@ intents = discord.Intents.default()
 intents.message_content = True
 
 API_POGODA="5923a291337d03ffd40040bb03ebbb2c"
-def pogoda(miasto):
+def pogoda_pobierz(miasto):
     url= f"https://api.openweathermap.org/data/2.5/weather?q={miasto}&appid={API_POGODA}&units=metric&lang=pl"
     result=requests.get(url)
     dane=result.json()
-    print(dane)
-    opis=dane['weather'][0]['description']
-    temp=dane['main']['temp']
-    return f"Pogoda dla miasta {miasto} Temperatura: {temp} °C Opis: {opis}"
+    if dane['cod']==200:
+        opis=dane['weather'][0]['description']
+        temp=dane['main']['temp']
+        return f"""```Pogoda dla miasta {miasto}
+Temperatura: {temp}°C
+Opis: {opis}```"""
+    else:
+        return "Miasto nie istnieje"
+
+
 bot = commands.Bot(command_prefix="!", intents=intents)
 @bot.event
 async def on_ready():
@@ -79,6 +85,6 @@ async def ai(ctx, *, prompt):
 
 @bot.command()
 async def pogoda(ctx, *, miasto):
-    wynik=pogoda(miasto)
-    await ctx.send(f"{wynik}")
+    wynik=pogoda_pobierz(miasto)
+    await ctx.send(wynik)
 bot.run(TOKEN)
