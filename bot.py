@@ -3,18 +3,19 @@ import requests
 import discord
 from discord.ext import commands
 
-API_GEMINI = "AIzaSyAT5h1HmXo2auhDyT34IhcviKuGe4mz9O4"
+API_GEMINI = "AIzaSyCyoG-wAhFz_DZnqpiJyCaNrkXmCClVLqc"
 genai.configure(api_key=API_GEMINI)
 model = genai.GenerativeModel("gemini-3.5-flash")
 def ask_ai(prompt):
     response = model.generate_content(prompt)
     return response.text
 
-TOKEN = "MTUwNjM2MTA4Mjg1MDMxMjIyMg.GgRNGX.uoLuZ7JuuXxgZLYCpr08qapuON97KGSCieLpAk"
-intents = discord.Intents.default()
+TOKEN="MTUwNjM2MTA4Mjg1MDMxMjIyMg.GoKjtz.qmtHIowck0ULV1mja_Ql_PD8I72kusggfSDsiQ"
+intents=discord.Intents.default()
 intents.message_content = True
+bot = commands.Bot(command_prefix="!", intents=intents)
 
-API_POGODA="5923a291337d03ffd40040bb03ebbb2c"
+API_POGODA="c8353a3cf749ce1f1c0f8fbe535fa45d"
 def pogoda_pobierz(miasto):
     url= f"https://api.openweathermap.org/data/2.5/weather?q={miasto}&appid={API_POGODA}&units=metric&lang=pl"
     result=requests.get(url)
@@ -28,8 +29,6 @@ Opis: {opis}```"""
     else:
         return "Miasto nie istnieje"
 
-
-bot = commands.Bot(command_prefix="!", intents=intents)
 @bot.event
 async def on_ready():
     print(f"Zalogowano jako {bot.user}")
@@ -54,8 +53,20 @@ async def wiek(ctx, wiek: int):
 @bot.command()
 async def pomoc(ctx, komenda=''):
     if komenda=='':
-        await ctx.send(f'```POMOC\nDostępne komendy:\n!pomoc\n!ping\n!wiek\n!kalkulator\nWpisz !help komenda w celu dokladniejszej pomocy```')
-
+        await ctx.send("```\nPOMOC\nDostępne komendy:\n!pomoc\n!ping\n!ai\n!wiek\n!kalkulator\n!pogoda\nWpisz !pomoc komenda w celu dokladniejszej pomocy```")
+    elif komenda=='ping':
+        await ctx.send("```\nPOMOC\nInstrukcja obsługi komendy !ping : \n Wpisz !ping a się dowiesz :)```")
+    elif komenda=='ai':
+        await ctx.send("```\nPOMOC\nInstrukcja obsługi komendy !ai : \n Wpisująć !ai możesz poprosić AI o pomoc np. w rozwiązaniu trudnego zadania\n Zastosowanie:\n !ai {prompt}```")
+    elif komenda=='wiek':
+        await ctx.send("```\nPOMOC\nInstrukcja obsługi komendy !wiek : \n Wpisująć !wiek 20 możesz sprawdzić czy jesteś pełnoletni\n Zastosowanie:\n !wiek {wiek}```")
+    elif komenda=='kalkulator':
+        await ctx.send("```\nPOMOC\nInstrukcja obsługi komendy !kalkulator : \n Wpisująć !kalkulator 20 + 15 możesz dokonywać prostych obliczeń matematycznych\n Dostępne operatory: +, -, *, /\n Zastosowanie:\n !kalkulator {a} {operator} {b}```")
+    elif komenda=='pogoda':
+        await ctx.send("```\nPOMOC\nInstrukcja obsługi komendy !pogoda : \n Wpisując !pogoda Lublin możesz sprawdzić jaka jest aktualna pogoda w Lublinie lub w innym mieście\n Zastosowanie:\n !pogoda {miasto}```")
+    else:
+        await ctx.send("Komenda nie istnieje")
+    
 @bot.command()
 async def kalkulator(ctx, a='',opcja='', b=''):
     if opcja=='+':
@@ -73,12 +84,12 @@ async def kalkulator(ctx, a='',opcja='', b=''):
 async def ai(ctx, *, prompt):
     async with ctx.typing():
         result=ask_ai(f"""Jesteś pomocnym botem Discord.
-                            Odpowiadasz:
-                            - krótko
-                            - konkretnie
-                            - bez lania wody
-                            - maksymalnie 2000 znaków
-                            {prompt}""")
+Odpowiadasz:
+- krótko
+- konkretnie
+- bez lania wody
+- maksymalnie 2000 znaków
+{prompt}""")
         if len(result)>2000:
             result=result[:1950]
     await ctx.send(f"```{result}```")
