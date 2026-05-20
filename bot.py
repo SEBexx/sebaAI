@@ -2,20 +2,23 @@ import google.generativeai as genai
 import requests
 import discord
 from discord.ext import commands
+from dotenv import load_dotenv
+import os
 
-API_GEMINI = "AIzaSyCyoG-wAhFz_DZnqpiJyCaNrkXmCClVLqc"
+load_dotenv()
+API_GEMINI = os.getenv("API_GEMINI")
 genai.configure(api_key=API_GEMINI)
 model = genai.GenerativeModel("gemini-3.5-flash")
 def ask_ai(prompt):
     response = model.generate_content(prompt)
     return response.text
 
-TOKEN="MTUwNjM2MTA4Mjg1MDMxMjIyMg.GoKjtz.qmtHIowck0ULV1mja_Ql_PD8I72kusggfSDsiQ"
+TOKEN=os.getenv("DISCORD_TOKEN")
 intents=discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix="!", intents=intents)
 
-API_POGODA="c8353a3cf749ce1f1c0f8fbe535fa45d"
+API_POGODA=os.getenv("API_POGODA")
 def pogoda_pobierz(miasto):
     url= f"https://api.openweathermap.org/data/2.5/weather?q={miasto}&appid={API_POGODA}&units=metric&lang=pl"
     result=requests.get(url)
@@ -69,16 +72,22 @@ async def pomoc(ctx, komenda=''):
     
 @bot.command()
 async def kalkulator(ctx, a='',opcja='', b=''):
-    if opcja=='+':
-        wynik=int(a)+int(b)
-    elif opcja=='-':
-        wynik=int(a)-int(b)
-    elif opcja=='*':
-        wynik=int(a)*int(b)
-    elif opcja=='/':
-        wynik=int(a)/int(b)
+    try:
+        if opcja=='+':
+            wynik=int(a)+int(b)
+        elif opcja=='-':
+            wynik=int(a)-int(b)
+        elif opcja=='*':
+            wynik=int(a)*int(b)
+        elif opcja=='/':
+            wynik=int(a)/int(b)
+        else:
+            await ctx.send("Nieznany operator")
+            return
     
-    await ctx.send(f"```Wynik:\n {a} {opcja} {b} = {wynik}```")
+        await ctx.send(f"```Wynik:\n {a} {opcja} {b} = {wynik}```")
+    except:
+        await ctx.send("Błąd")
 
 @bot.command()
 async def ai(ctx, *, prompt):
@@ -92,7 +101,7 @@ Odpowiadasz:
 {prompt}""")
         if len(result)>2000:
             result=result[:1950]
-    await ctx.send(f"```{result}```")
+    await ctx.send(result)
 
 @bot.command()
 async def pogoda(ctx, *, miasto):
