@@ -1,4 +1,5 @@
 import google.generativeai as genai
+import requests
 import discord
 from discord.ext import commands
 
@@ -13,7 +14,15 @@ TOKEN = "MTUwNjM2MTA4Mjg1MDMxMjIyMg.GgRNGX.uoLuZ7JuuXxgZLYCpr08qapuON97KGSCieLpA
 intents = discord.Intents.default()
 intents.message_content = True
 
-
+API_POGODA="5923a291337d03ffd40040bb03ebbb2c"
+def pogoda(miasto):
+    url= f"https://api.openweathermap.org/data/2.5/weather?q={miasto}&appid={API_POGODA}&units=metric&lang=pl"
+    result=requests.get(url)
+    dane=result.json()
+    print(dane)
+    opis=dane['weather'][0]['description']
+    temp=dane['main']['temp']
+    return f"Pogoda dla miasta {miasto} Temperatura: {temp} °C Opis: {opis}"
 bot = commands.Bot(command_prefix="!", intents=intents)
 @bot.event
 async def on_ready():
@@ -67,4 +76,9 @@ async def ai(ctx, *, prompt):
         if len(result)>2000:
             result=result[:1950]
     await ctx.send(f"```{result}```")
+
+@bot.command()
+async def pogoda(ctx, *, miasto):
+    wynik=pogoda(miasto)
+    await ctx.send(f"{wynik}")
 bot.run(TOKEN)
