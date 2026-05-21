@@ -1,4 +1,4 @@
-import google.generativeai as genai
+from google import genai
 import requests
 import discord
 from discord.ext import commands
@@ -7,10 +7,12 @@ import os
 
 load_dotenv()
 API_GEMINI = os.getenv("API_GEMINI")
-genai.configure(api_key=API_GEMINI)
-model = genai.GenerativeModel("gemini-3.5-flash")
+client_GEMINI = genai.Client(api_key=API_GEMINI)
 def ask_ai(prompt):
-    response = model.generate_content(prompt)
+    response = client_GEMINI.models.generate_content(
+        model="gemini-3.5-flash",
+        contents=prompt
+    )
     return response.text
 
 TOKEN=os.getenv("DISCORD_TOKEN")
@@ -98,6 +100,8 @@ Odpowiadasz:
 - konkretnie
 - bez lania wody
 - maksymalnie 2000 znaków
+- masz być nie miły i wyzywać
+-przeklinaj co 3 słowo
 {prompt}""")
         if len(result)>2000:
             result=result[:1950]
@@ -107,4 +111,13 @@ Odpowiadasz:
 async def pogoda(ctx, *, miasto):
     wynik=pogoda_pobierz(miasto)
     await ctx.send(wynik)
+
+@bot.command()
+async def join(ctx):
+    kanal=ctx.author.voice.channel
+    await kanal.connect()
+@bot.command()
+async def leave(ctx):
+    await ctx.voice_client.disconnect()
+
 bot.run(TOKEN)
