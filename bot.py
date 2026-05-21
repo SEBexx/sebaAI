@@ -4,6 +4,7 @@ import discord
 from discord.ext import commands
 from dotenv import load_dotenv
 import os
+from ollamafreeapi import OllamaFreeAPI
 
 load_dotenv()
 API_GEMINI = os.getenv("API_GEMINI")
@@ -19,6 +20,16 @@ TOKEN=os.getenv("DISCORD_TOKEN")
 intents=discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix="!", intents=intents)
+
+client_ollama=OllamaFreeAPI()
+def ask_ollama(prompt):
+    response=client_ollama.chat(
+        model="llama3.2:3b",
+        prompt=prompt,
+        temperature=0.9
+    )
+    return response
+
 
 API_POGODA=os.getenv("API_POGODA")
 def pogoda_pobierz(miasto):
@@ -93,8 +104,26 @@ async def kalkulator(ctx, a='',opcja='', b=''):
 
 @bot.command()
 async def ai(ctx, *, prompt):
+    try:
+        async with ctx.typing():
+            result=ask_ai(f"""Jesteś pomocnym botem Discord.
+Odpowiadasz:
+- krótko
+- konkretnie
+- bez lania wody
+- maksymalnie 2000 znaków
+- masz być nie miły i wyzywać
+-przeklinaj co 3 słowo
+{prompt}""")
+            if len(result)>2000:
+                result=result[:1950]
+        await ctx.send(result)
+    except:
+        await ctx.send("Wyczerpano limit zapytań")
+@bot.command()
+async def ai2(ctx, *, prompt):
     async with ctx.typing():
-        result=ask_ai(f"""Jesteś pomocnym botem Discord.
+        result=ask_ollama(f"""Jesteś pomocnym botem Discord.
 Odpowiadasz:
 - krótko
 - konkretnie
