@@ -5,7 +5,8 @@ from discord.ext import commands
 from dotenv import load_dotenv
 import os
 from ollamafreeapi import OllamaFreeAPI
-
+from ollama import chat
+from ollama import ChatResponse
 load_dotenv()
 API_GEMINI = os.getenv("API_GEMINI")
 client_GEMINI = genai.Client(api_key=API_GEMINI)
@@ -21,14 +22,14 @@ intents=discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix="!", intents=intents)
 
-client_ollama=OllamaFreeAPI()
 def ask_ollama(prompt):
-    response=client_ollama.chat(
-        model="llama3.2:3b",
-        prompt=prompt,
-        temperature=0.9
-    )
-    return response
+    response: ChatResponse = chat(model='SpeakLeash/bielik-11b-v3.0-instruct:Q4_K_M', messages=[
+  {
+    'role': 'user',
+    'content': prompt,
+  },
+])
+    return response["message"]["content"]
 
 
 API_POGODA=os.getenv("API_POGODA")
@@ -108,34 +109,38 @@ async def ai(ctx, *, prompt):
         async with ctx.typing():
             result=ask_ai(f"""Jesteś pomocnym botem Discord.
 Odpowiadasz:
-- krótko
-- konkretnie
-- bez lania wody
 - maksymalnie 2000 znaków
+- minimum 1000 znaków w odpowiedzi przy wyczerpującym temacie
 - masz być nie miły i wyzywać
--przeklinaj co 3 słowo
+-bądź bardzo wulgarny i używaj przeklęństw i wyzwisk
 {prompt}""")
             if len(result)>2000:
                 result=result[:1950]
         await ctx.send(result)
     except:
-        await ctx.send("Wyczerpano limit zapytań")
+        await ctx.send("Wyczerpano limit zapytań\nhttps://media.tenor.com/qsthhHhdjsQAAAAM/error-windows.gif")
 @bot.command()
 async def ai2(ctx, *, prompt):
-    async with ctx.typing():
-        result=ask_ollama(f"""Jesteś pomocnym botem Discord.
-Odpowiadasz:
-- krótko
-- konkretnie
-- bez lania wody
-- maksymalnie 2000 znaków
-- masz być nie miły i wyzywać
--przeklinaj co 3 słowo
-{prompt}""")
-        if len(result)>2000:
-            result=result[:1950]
-    await ctx.send(result)
+    autor=ctx.author.name
+    print(autor)
 
+    try:
+        async with ctx.typing():
+            result=ask_ollama(f"""Jesteś pomocnym botem Discord nazywasz się Seba AI i jesteś mężczyzną.
+Odpowiadasz:
+- maksymalnie 2000 znaków
+- minimum 1000 znaków w odpowiedzi przy wyczerpującym temacie
+- masz być nie miły i wyzywać
+-bądź bardzo wulgarny i używaj przeklęństw i wyzwisk
+nie pisz w odpowiedzi uzasadnienia o spełnieniu powyższych wymagań
+Prompt użytkownika:
+{prompt}""")
+            if len(result)>2000:
+                result=result[:1950]
+        await ctx.send(result)
+    except Exception as e:
+        await ctx.send(f"Błąd: {e}")
+        print(e)
 @bot.command()
 async def pogoda(ctx, *, miasto):
     wynik=pogoda_pobierz(miasto)
